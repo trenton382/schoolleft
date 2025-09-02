@@ -93,7 +93,17 @@ function countSchoolDaysRemaining(fromDate = new Date()) {
 }
 
 function getSchoolDaysPassed() {
-  return totalSchoolDays - countSchoolDaysRemaining();
+    const now = new Date();
+    const firstDay = new Date(schoolStart);
+    firstDay.setHours(0, 0, 0, 0);
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    let passed = totalSchoolDays - countSchoolDaysRemaining();
+    // If today is the first day and after school start time, count first day as passed
+    if (today.getTime() === firstDay.getTime() && now > schoolStart) {
+      passed = 1;
+    }
+    return passed;
 }
 
 function updatePage() {
@@ -119,9 +129,19 @@ function updatePage() {
 
   // During school year
   const secondsLeft = getTimeLeftInSchool();
-  const daysRemaining = countSchoolDaysRemaining(now);
+  let daysRemaining = countSchoolDaysRemaining(now);
+  const firstDay = new Date(schoolStart);
+  firstDay.setHours(0, 0, 0, 0);
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  if (today.getTime() === firstDay.getTime() && now > schoolStart) {
+    daysRemaining -= 1;
+  }
   const daysPassed = getSchoolDaysPassed();
-  const percent = ((daysPassed / totalSchoolDays) * 100).toFixed(1);
+  // Total school time in seconds: 1230hr 15min = 4,421,100 seconds
+  const totalSeconds = 1230 * 3600 + 15 * 60; // 4,421,100
+  const secondsCompleted = totalSeconds - secondsLeft;
+  const percent = ((secondsCompleted / totalSeconds) * 100).toFixed(2);
 
   document.getElementById("timer").textContent =
     `Time left in school: ${formatVerbose(secondsLeft)}`;
